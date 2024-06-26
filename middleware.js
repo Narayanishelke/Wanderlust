@@ -1,7 +1,9 @@
+const express=require("express");
 const Listing= require("./models/listing");
-const expressError = require("./utils/expressError.js");
+const ExpressError = require("./utils/ExpressError.js");
 const {listingSchema, reviewSchema}= require("./schema.js");
-const Review = require("./models/review");
+const Review = require("./models/review.js");
+
 
 
 module.exports.isLoggedIn =(req, res, next)=>{
@@ -35,7 +37,7 @@ module.exports.validateListing= (req, res, next) =>{
     let {error}= listingSchema.validate(req.body);
     if (error){
       let errMsg= error.details.map((el)=>el.message).join(",");
-      throw new expressError (400, err.Msg);
+      throw new ExpressError (400, errMsg);
     }else{
       next();
     }
@@ -43,22 +45,21 @@ module.exports.validateListing= (req, res, next) =>{
 
 
   module.exports.validateReview= (req, res, next) =>{
-      let {error}= reviewReview.validate(req.body);
+      let {error}= reviewSchema.validate(req.body);
       if (error){
         let errMsg= error.details.map(el=>el.message).join(",");
-        throw new expressError (400, err.Msg);
+        throw new ExpressError (400, errMsg);
       }else{
         next();
       }
     };
 
-    module.exports.isreviewAuthor= async(req, res, next)=>{
+    module.exports.isReviewAuthor=async(req,res,next)=>{
       let {id, reviewId } = req.params;
-    let review= await Review.findById(id);
-    if(!review.author.equals(res.locals.currUser._id)){
-      req.flash("error", "You are not the author of this review");
-      return res.redirect(`/listings/${id}`);
-    }
+      let review=await Review.findById(reviewId)
+      if(!review.author.equals(res.locals.currUser._id)){
+          req.flash("error","You did not create this review")
+          return res.redirect(`/listings/${id}`)
   
     next();
-  };
+      }};
